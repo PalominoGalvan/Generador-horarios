@@ -1,2 +1,2 @@
-# Generación automatica de horarios para arquitectura
-La divición de arquitectura de la Universidad de Guanajuato tiene un problema con la gestión de horarios por una matricula que parece superar las instalaciones de la divición. El objetivo es crear un programa basado en OR-TOOLs  para generar los horarios de los alumnos de manera automatica y de manera que las personas administrativas puedan hacerlo
+# Generación automática de horarios para el Departamento de Arquitectura
+El Departamento de Arquitectura de la Universidad de Guanajuato tiene un problema con la gestión de horarios por una matricula que parece superar las instalaciones del departamento. El objetivo es crear un programa basado en OR-TOOLs  para generar los horarios de los alumnos de manera automática y de manera que el personal administrativo puedan hacerlo.
