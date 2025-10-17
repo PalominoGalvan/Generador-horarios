@@ -1,103 +1,281 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import { useState, FormEvent } from 'react';
+
+//datos para el formulario
+interface FormData {
+  nue: string;
+  apellidos: string;
+  nombres: string;
+  correoInstitucional: string;
+  correoAlterno: string;
+  telefono: string;
+  nombramiento: 'tiempo_completo' | 'tiempo_parcial_definido' | 'tiempo_parcial_indefinido' | '';
+  horasDefinidas?: number;
+  departamento?: 'arquitectura' | 'diseno' | 'otro';
+  puestoAdministrativo: 'si' | 'no' | '';
+  disponibilidad: Record<string, boolean[]>;
+  udasInteres: string[];
+}
+
+//Estado inicial para poder resetear el formulario
+const DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+const HORAS = Array.from({ length: 12 }, (_, i) => `${i + 8}:00 - ${i + 9}:00`);
+const UDAS_DISPONIBLES = [
+  'Acuarela', 'Análisis de Sistemas', 'Arquitectura Crítica', 'Arquitectura de Paisaje', 
+  'Biónica', 'Construcción', 'Diseño Asistido por Computadora', 'Historia del Arte', 
+  'Instalaciones', 'Materiales y Procesos', 'Teoría del Diseño', 'Urbanismo'
+];
+
+const disponibilidadInicial = DIAS.reduce((acc, dia) => {
+  acc[dia] = Array(HORAS.length).fill(false);
+  return acc;
+}, {} as Record<string, boolean[]>);
+
+const initialState: FormData = {
+  nue: '',
+  apellidos: '',
+  nombres: '',
+  correoInstitucional: '',
+  correoAlterno: '',
+  telefono: '',
+  nombramiento: '',
+  puestoAdministrativo: '',
+  disponibilidad: disponibilidadInicial,
+  udasInteres: [],
+};
+
+
+//Componente principal de la página
+export default function CargaAcademicaPage() {
+  
+  const [formData, setFormData] = useState<FormData>(initialState);
+  const [status, setStatus] = useState<{ type: 'idle' | 'loading' | 'success' | 'error'; message: string }>({
+    type: 'idle',
+    message: '',
+  });
+
+  //Manejadores de cambios en los inputs
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleDisponibilidadChange = (dia: string, horaIndex: number) => {
+    setFormData(prev => {
+      const nuevaDisponibilidad = { ...prev.disponibilidad };
+      const nuevoArrayDia = [...nuevaDisponibilidad[dia]]; 
+      nuevoArrayDia[horaIndex] = !nuevoArrayDia[horaIndex];
+      nuevaDisponibilidad[dia] = nuevoArrayDia;
+      return { ...prev, disponibilidad: nuevaDisponibilidad };
+    });
+  };
+
+  const handleUdaChange = (uda: string) => {
+    setFormData(prev => {
+      const nuevasUdas = prev.udasInteres.includes(uda)
+        ? prev.udasInteres.filter(u => u !== uda)
+        : [...prev.udasInteres, uda];
+      return { ...prev, udasInteres: nuevasUdas };
+    });
+  };
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setStatus({ type: 'loading', message: 'Enviando información...' });
+
+    try {
+      const response = await fetch('http://localhost:5000/api/profesores', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const responseBody = await response.json();
+      if (!response.ok) {
+        throw new Error(responseBody.error || responseBody.message || `Error del servidor: ${response.statusText}`);
+      }
+      
+      console.log('Respuesta del servidor:', responseBody);
+      setStatus({ type: 'success', message: '¡Formulario enviado con éxito!' });
+      setFormData(initialState);
+
+    } catch (error: any) {
+      console.error('Error al enviar el formulario:', error);
+      setStatus({ type: 'error', message: error.message || 'No se pudo enviar el formulario. Intenta de nuevo.' });
+    }
+  };
+
+  // renderizado
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="bg-[#FDFCF4] min-h-screen flex items-center justify-center p-4 sm:p-6 lg:p-8">
+      <div className="max-w-4xl w-full bg-white rounded-lg shadow-xl p-8 space-y-8 border border-gray-200">
+        
+        <header className="text-center">
+          <h1 className="text-3xl font-bold text-black">Carga Académica de Profesores</h1>
+          <p className="mt-2 text-md text-gray-700">
+            Este formulario nos ayuda a recopilar la información necesaria para la asignación de Unidades de Aprendizaje (UDAs) para el próximo ciclo escolar.
+          </p>
+        </header>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Sección de Información Personal */}
+          <div className="border-b border-gray-200 pb-6">
+            <h2 className="text-xl font-semibold text-black mb-4">Información Personal</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {renderInput('nue', 'NUE (Clave Única)', 'text', 'Ej. 123456')}
+              {renderInput('apellidos', 'Apellidos', 'text', 'Ej. Pérez García')}
+              {renderInput('nombres', 'Nombre(s)', 'text', 'Ej. Juan Carlos')}
+              {renderInput('correoInstitucional', 'Correo Institucional', 'email', 'ejemplo@ugto.mx')}
+              {renderInput('correoAlterno', 'Correo Alterno', 'email', 'ejemplo@gmail.com')}
+              {renderInput('telefono', 'Número Telefónico', 'tel', 'Ej. 4731234567')}
+            </div>
+          </div>
+
+          {/* Sección de Información Laboral */}
+          <div className="border-b border-gray-200 pb-6">
+            <h2 className="text-xl font-semibold text-black mb-4">Información Laboral</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {renderInputSelect('nombramiento', 'Nombramiento', [
+                { value: 'tiempo_completo', label: 'Profesor de Tiempo Completo' },
+                { value: 'tiempo_parcial_definido', label: 'Tiempo Parcial (Horas Definidas)' },
+                { value: 'tiempo_parcial_indefinido', label: 'Tiempo Parcial (Sin Horas Definidas)' },
+              ])}
+              
+              {formData.nombramiento === 'tiempo_parcial_definido' && (
+                <>
+                  {renderInput('horasDefinidas', '¿Cuántas horas tiene definidas?', 'number')}
+                  {renderInputSelect('departamento', 'Departamento', [
+                    { value: 'arquitectura', label: 'Arquitectura' },
+                    { value: 'diseno', label: 'Diseño' },
+                    { value: 'otro', label: 'Otro' },
+                  ])}
+                </>
+              )}
+
+              {renderInputSelect('puestoAdministrativo', '¿Tiene un puesto administrativo adicional?', [
+                { value: 'si', label: 'Sí' },
+                { value: 'no', label: 'No' },
+              ])}
+            </div>
+          </div>
+          
+          {/* Disponibilidad de Horario */}
+          <div>
+            <h2 className="text-xl font-semibold text-black mb-4">Disponibilidad de Horario</h2>
+            <p className="text-sm text-gray-500 mb-4">Selecciona los bloques de una hora en los que puedes impartir clase (8:00 am a 8:00 pm).</p>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200 border border-gray-200">
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th className="px-2 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Hora</th>
+                    {DIAS.map(dia => (
+                      <th key={dia} className="px-2 py-3 text-center text-xs font-medium text-gray-600 uppercase tracking-wider">{dia}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {HORAS.map((hora, horaIndex) => (
+                    <tr key={hora}>
+                      <td className="px-2 py-2 whitespace-nowrap text-sm font-medium text-gray-700">{hora}</td>
+                      {DIAS.map(dia => (
+                        <td key={dia} className="text-center">
+                          <input
+                            type="checkbox"
+                            className="h-5 w-5 rounded text-[#5C8AA8] focus:ring-[#4F7842] border-gray-300 cursor-pointer"
+                            checked={formData.disponibilidad[dia][horaIndex]}
+                            onChange={() => handleDisponibilidadChange(dia, horaIndex)}
+                          />
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* UDAs de Interés */}
+          <div>
+            <h2 className="text-xl font-semibold text-black mb-4">UDAs de Interés</h2>
+            <p className="text-sm text-gray-500 mb-4">Selecciona todas las Unidades de Aprendizaje que puedes o te gustaría impartir.</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+              {UDAS_DISPONIBLES.map(uda => (
+                <div key={uda} className="flex items-center">
+                  <input
+                    id={`uda-${uda}`}
+                    type="checkbox"
+                    className="h-4 w-4 rounded text-[#5C8AA8] focus:ring-[#4F7842] border-gray-300"
+                    checked={formData.udasInteres.includes(uda)}
+                    onChange={() => handleUdaChange(uda)}
+                  />
+                  <label htmlFor={`uda-${uda}`} className="ml-2 block text-sm text-black">{uda}</label>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Botón de envío*/}
+          <div className="pt-5">
+            <div className="flex justify-end items-center gap-4">
+              {status.type !== 'idle' && status.type !== 'loading' && (
+                <p className={`text-sm ${status.type === 'success' ? 'text-[#4F7842]' : 'text-[#AD0D00]'}`}>
+                  {status.message}
+                </p>
+              )}
+               <button
+                type="submit"
+                disabled={status.type === 'loading'}
+                className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-[#4F7842] hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#4F7842] disabled:bg-opacity-50 disabled:cursor-not-allowed"
+              >
+                {status.type === 'loading' ? 'Enviando...' : 'Enviar Formulario'}
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
     </div>
   );
+  
+  //Funciones helper para renderizar inputs 
+  function renderInput(name: keyof FormData, label: string, type: string, placeholder?: string) {
+    return (
+      <div>
+        <label htmlFor={name} className="block text-sm font-medium text-black">{label}</label>
+        <input
+          type={type}
+          id={name}
+          name={name}
+          value={formData[name] as string || ''}
+          onChange={handleInputChange}
+          placeholder={placeholder}
+          required={name !== 'horasDefinidas'}
+          /* La clase 'text-black' debería resolver el problema del texto invisible */
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#5C8AA8] focus:ring-[#5C8AA8] sm:text-sm text-black"
+        />
+      </div>
+    );
+  }
+
+  function renderInputSelect(name: keyof FormData, label: string, options: { value: string; label: string }[]) {
+    return (
+      <div>
+        <label htmlFor={name} className="block text-sm font-medium text-black">{label}</label>
+        <select
+          id={name}
+          name={name}
+          value={formData[name] as string || ''}
+          onChange={handleInputChange}
+          required
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#5C8AA8] focus:ring-[#5C8AA8] sm:text-sm text-black"
+        >
+          <option value="">Selecciona una opción</option>
+          {options.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+        </select>
+      </div>
+    );
+  }
 }
+

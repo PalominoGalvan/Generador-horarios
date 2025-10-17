@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    font-family: "Times New Roman", Times, serif;
+  }
+}
+
+
+@layer components {
+  .form-input {
+    @apply block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm 
+           text-black dark:text-white 
+           placeholder-gray-500 dark:placeholder-gray-400 
+           focus:outline-none focus:ring-blue-500 focus:border-blue-500 
+           sm:text-sm transition-colors duration-150;
+  }
+
+  .form-checkbox {
+    @apply h-5 w-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600;
+  }
+  
+  .form-radio {
+    @apply h-4 w-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600;
+  }
+}

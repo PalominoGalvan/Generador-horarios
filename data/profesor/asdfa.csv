@@ -1,0 +1,12 @@
+Campo,Valor
+nue,asdfa
+apellidos,a
+nombres,asdf
+correoInstitucional,yo.mero@ugto.mx
+correoAlterno,yo.meromorales@cimat.mx
+telefono,12342345
+nombramiento,tiempo_parcial_definido
+puestoAdministrativo,no
+disponibilidad,"{'Lunes': [False, False, False, False, False, False, False, False, False, False, False, False], 'Martes': [False, False, False, False, False, False, False, False, False, False, False, False], 'Miércoles': [False, False, False, False, False, False, False, False, False, False, True, False], 'Jueves': [False, False, False, False, False, False, False, False, True, False, False, False], 'Viernes': [False, False, False, False, False, False, False, False, False, False, False, False], 'Sábado': [False, False, False, False, False, False, False, False, False, False, False, False]}"
+udasInteres,"['Análisis de Sistemas', 'Instalaciones']"
+horasDefinidas,
