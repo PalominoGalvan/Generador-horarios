@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
         await dbConnect();
         const { nua, firstName, lastName, phoneNumber, emailAddress, ...other } = data;
         const teacher = await Teacher.findOneAndUpdate(
-            { emailAddress }, 
+            { firstName, lastName, emailAddress }, 
             { nua, firstName, lastName, phoneNumber, emailAddress },
             { upsert: true, new: true, fields: { _id: true }  }
         )

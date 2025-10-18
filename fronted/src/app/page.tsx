@@ -105,7 +105,7 @@ export default function CargaAcademicaPage() {
       }
       
       console.log('Respuesta del servidor:', responseBody);
-      setStatus({ type: 'success', message: '¡Formulario enviado con éxito!' });
+      setStatus({ type: 'success', message: responseBody.message });
       setFormData(initialState);
 
     } catch (error: any) {
