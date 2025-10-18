@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, FormEvent } from 'react';
+import { subjects } from './utils/subject_validator';
 
 //datos para el formulario
 interface FormData {
@@ -21,11 +22,6 @@ interface FormData {
 //Estado inicial para poder resetear el formulario
 const DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 const HORAS = Array.from({ length: 12 }, (_, i) => `${i + 8}:00 - ${i + 9}:00`);
-const UDAS_DISPONIBLES = [
-  'Acuarela', 'Análisis de Sistemas', 'Arquitectura Crítica', 'Arquitectura de Paisaje', 
-  'Biónica', 'Construcción', 'Diseño Asistido por Computadora', 'Historia del Arte', 
-  'Instalaciones', 'Materiales y Procesos', 'Teoría del Diseño', 'Urbanismo'
-];
 
 const disponibilidadInicial = DIAS.reduce((acc, dia) => {
   acc[dia] = Array(HORAS.length).fill(false);
@@ -85,12 +81,22 @@ export default function CargaAcademicaPage() {
     setStatus({ type: 'loading', message: 'Enviando información...' });
 
     try {
-      const response = await fetch('http://localhost:5000/api/profesores', {
+      const response = await fetch('/api/profesores', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          nua: formData.nue,
+          firstName: formData.nombres,
+          lastName: formData.apellidos,
+          desiredSubjects: formData.udasInteres,
+          emailAddress: [formData.correoInstitucional, formData.correoAlterno],
+          phoneNumber: formData.telefono,
+          contractType: ["", "tiempo_completo", "tiempo_parcial_definido", "tiempo_parcial_indefinido"].indexOf(formData.nombramiento),
+          hasAdministrativePosition: Boolean(["no", "si"].indexOf(formData.puestoAdministrativo)),
+          availability: DIAS.map((dia: string) => (formData.disponibilidad[dia].map(Number).join('')))
+        }),
       });
 
       const responseBody = await response.json();
@@ -202,7 +208,7 @@ export default function CargaAcademicaPage() {
             <h2 className="text-xl font-semibold text-black mb-4">UDAs de Interés</h2>
             <p className="text-sm text-gray-500 mb-4">Selecciona todas las Unidades de Aprendizaje que puedes o te gustaría impartir.</p>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              {UDAS_DISPONIBLES.map(uda => (
+              {subjects.map(uda => (
                 <div key={uda} className="flex items-center">
                   <input
                     id={`uda-${uda}`}

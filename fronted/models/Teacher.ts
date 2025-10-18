@@ -11,8 +11,6 @@ export interface Teacher extends mongoose.Document {
     isActive: boolean;
     phoneNumber: string;
     emailAddress: string[];
-    passwordConfirm: string;
-    password: string;
 }
 
 const TeacherSchema = new mongoose.Schema<Teacher>({
