@@ -214,7 +214,7 @@ export default function CargaAcademicaPage() {
                     id={`uda-${uda}`}
                     type="checkbox"
                     className="h-4 w-4 rounded text-[#5C8AA8] focus:ring-[#4F7842] border-gray-300"
-                    checked={formData..includes(uda)}
+                    checked={formData.udasInteres.includes(uda)}
                     onChange={() => handleUdaChange(uda)}
                   />
                   <label htmlFor={`uda-${uda}`} className="ml-2 block text-sm text-black">{uda}</label>
