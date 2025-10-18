@@ -1,3 +1,4 @@
 export default function phoneValidator(phone: string): boolean {
-    return /((55|56|81|83)[0-9]{8})|((656|657|614|618|999|990|221|222|442|446|449|663|664|612|624|864|686|667|722|729|998|871|744|444|440|833|477|479|961|662|633|645|644|642|631|229|443|921|771|981|899|868)[0-9]{7})/.test(phone);
+    // Valida que sean exactamente 10 dígitos numéricos
+    return /^[0-9]{10}$/.test(phone);
 }
