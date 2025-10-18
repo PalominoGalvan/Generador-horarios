@@ -21,7 +21,7 @@ interface FormData {
 
 //Estado inicial para poder resetear el formulario
 const DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-const HORAS = Array.from({ length: 12 }, (_, i) => `${i + 8}:00 - ${i + 9}:00`);
+const HORAS = Array.from({ length: 14 }, (_, i) => `${i + 7}:00 - ${i + 8}:00`);
 
 const disponibilidadInicial = DIAS.reduce((acc, dia) => {
   acc[dia] = Array(HORAS.length).fill(false);
@@ -93,7 +93,7 @@ export default function CargaAcademicaPage() {
           desiredSubjects: formData.udasInteres,
           emailAddress: [formData.correoInstitucional, formData.correoAlterno],
           phoneNumber: formData.telefono,
-          contractType: ["", "tiempo_completo", "tiempo_parcial_definido", "tiempo_parcial_indefinido"].indexOf(formData.nombramiento),
+          contractType: ["", "tiempo_completo", "tiempo_parcial_definitivo", "tiempo_parcial_indefinido"].indexOf(formData.nombramiento),
           hasAdministrativePosition: Boolean(["no", "si"].indexOf(formData.puestoAdministrativo)),
           availability: DIAS.map((dia: string) => (formData.disponibilidad[dia].map(Number).join('')))
         }),
@@ -146,8 +146,8 @@ export default function CargaAcademicaPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {renderInputSelect('nombramiento', 'Nombramiento', [
                 { value: 'tiempo_completo', label: 'Profesor de Tiempo Completo' },
-                { value: 'tiempo_parcial_definido', label: 'Tiempo Parcial (Horas Definidas)' },
-                { value: 'tiempo_parcial_indefinido', label: 'Tiempo Parcial (Sin Horas Definidas)' },
+                { value: 'tiempo_parcial_definitivo', label: 'Profesor de Tiempo Parcial con horas definitivas' },
+                { value: 'tiempo_parcial_indefinido', label: 'Profesor de Tiempo Parcial sin horas definitivas' },
               ])}
               
               {formData.nombramiento === 'tiempo_parcial_definido' && (
@@ -214,7 +214,7 @@ export default function CargaAcademicaPage() {
                     id={`uda-${uda}`}
                     type="checkbox"
                     className="h-4 w-4 rounded text-[#5C8AA8] focus:ring-[#4F7842] border-gray-300"
-                    checked={formData.udasInteres.includes(uda)}
+                    checked={formData..includes(uda)}
                     onChange={() => handleUdaChange(uda)}
                   />
                   <label htmlFor={`uda-${uda}`} className="ml-2 block text-sm text-black">{uda}</label>
