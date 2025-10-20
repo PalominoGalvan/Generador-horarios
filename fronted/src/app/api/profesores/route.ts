@@ -7,7 +7,7 @@ import validatePositiveNumber from "@/app/utils/number_validator";
 import validateSubject from "@/app/utils/subject_validator";
 import validateAvailability from "@/app/utils/availability_validator";
 
-const required_fields = ['naming', 'archHours', 'desiredSubjects', 'hasAdministrativePos', 'availability'];
+const required_fields = ['archHours', 'desiredSubjects', 'hasAdministrativePos', 'availability'];
 
 const verifyJwt = (cookieHeader: string | null): JwtPayload | null => {
     if (!cookieHeader || !parse(cookieHeader).authToken) {
@@ -26,13 +26,11 @@ export async function POST(req: NextRequest) {
         }
         const token = verifyJwt(req.headers.get('cookie'));
         if (!token) {
-            const response = NextResponse.redirect(new URL('/', req.url));
-            response.cookies.delete('authToken');
-            return response;
+            return NextResponse.json({ message: "Hubo un error. Necesitas volver a iniciar sesion." }, { status: 404 });
         }
         await dbConnect();
-        const { naming, archHours, desiredSubjects, hasAdministrativePos, availability, ...other } = data;
-        if (naming === 'tiempo_parcial_definitivo' && !validatePositiveNumber(archHours)) {
+        const { archHours, desiredSubjects, hasAdministrativePos, availability, ...other } = data;
+        if (Number.isInteger(archHours) && archHours >= 0) {
             return NextResponse.json({ message: 'El número de horas es inválido.' }, { status: 405 });
         }
         for (const subject of desiredSubjects) {
@@ -45,8 +43,8 @@ export async function POST(req: NextRequest) {
         }
         await Availability.updateOne(
             { _id: token.id },
-            { naming, archHours, desiredSubjects, hasAdministrativePos, availability },
-            { upsert: true }
+            { archHours: archHours, availability: availability, desiredSubjects: desiredSubjects, hasAdministrativePos: hasAdministrativePos },
+            { upsert: true, runValidators: true }
         )
         return NextResponse.json({ message: "Disponibilidad actualizada exitosamente" }, { status: 202 });
     } catch (error: any) {

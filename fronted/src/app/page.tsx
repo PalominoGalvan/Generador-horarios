@@ -3,12 +3,12 @@
 import { useState, FormEvent } from 'react';
 
 interface FormData {
-  email: string,
+  emailAddress: string,
   password: string,
 }
 
 const initialState: FormData = {
-  email: '',
+  emailAddress: '',
   password: ''
 };
 
@@ -23,13 +23,7 @@ export default function CargaAcademicaPage() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
 
-    let processedValue =value;
-
-    if (name === 'email') {
-      processedValue = value.toUpperCase();
-    }
-
-    setFormData(prev => ({ ...prev, [name]: processedValue }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -40,7 +34,7 @@ export default function CargaAcademicaPage() {
     const dataToSend = { ...formData };
   
     try {
-      const response = await fetch('/api/profesores', {
+      const response = await fetch('/api/iniciar_sesion', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -70,15 +64,15 @@ export default function CargaAcademicaPage() {
         </header>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {renderInput("email", "Correo Electronico", "email", "john.doe@ugto.mx")}
-          {renderInput("password", "Contrasena", showPassword ? "text" : "password", "************")}
-          <p onClick={() => setPasswordVisibility(prev => !prev)} className='block text-sm text-blue-800 underline'>Mostrar contrasena</p>
+          {renderInput("emailAddress", "Correo Electrónico", "email", "john.doe@ugto.mx")}
+          {renderInput("password", "Contraseña", showPassword ? "text" : "password", "************")}
+          <p onClick={() => setPasswordVisibility(prev => !prev)} className='block text-sm text-blue-800 underline'>Mostrar contraseña</p>
           {(status.type === 'error' || status.type === 'success') && (
             <p className={`text-sm mb-4 ${status.type === 'success' ? 'text-[#4F7842]' : 'text-[#AD0D00]'}`}>
               {status.message}
             </p>
           )}
-          <a href='/registro' className='block text-sm text-blue-800 underline'>No tienes cuenta? Registrate</a>
+          <a href='/registro' className='block text-sm text-blue-800 underline'>No tienes cuenta? Regístrate</a>
           <button
             type="submit"
             disabled={status.type === 'loading'}

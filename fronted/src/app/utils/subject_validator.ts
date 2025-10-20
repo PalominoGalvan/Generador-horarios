@@ -78,6 +78,11 @@ export const subjects = [
     "URBANISMO LATINOAMERICANO",
 ];
 
+function normalizeString(str: string) {
+    return str.normalize('NFD').replace(/\p{Diacritic}/gu, '');
+}
+
 export default function validateSubject(subject: string): boolean {
-    return subject in subjects;
+    subject = normalizeString(subject);
+    return subjects.filter(curr => normalizeString(curr) === subject).length > 0;
 }

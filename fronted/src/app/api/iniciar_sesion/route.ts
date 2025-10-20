@@ -19,13 +19,12 @@ export async function POST(req: NextRequest) {
         emailAddress = emailAddress.toLowerCase();
         const teacher = await Teacher.findOne(
             { emailAddress },
-            { upsert: true, new: true, fields: { 
+            { 
                     _id: true, 
                     firstName: true, 
                     lastName: true,
                     password: true, 
-                }  
-            }
+            }  
         )
         if (!teacher) {
             return NextResponse.json({ message: "El correo o contraseña son incorrectos." }, { status: 404 });

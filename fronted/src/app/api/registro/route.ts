@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
         await dbConnect();
         for (const field of required_fields) {
             if (!data[field] || data[field].length == 0) {
-                return Response.json({ status: 405, message: `El campo ${field} no puede estar vacío.`});
+                return NextResponse.json({ message: `El campo ${field} no puede estar vacío.`}, { status: 405 });
             }
         }
         let { nua, firstName, lastName, phoneNumber, emailAddress, password, ...other } = data;

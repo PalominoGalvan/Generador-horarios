@@ -4,7 +4,8 @@ import mongoose from "mongoose";
 
 export interface Availability extends mongoose.Document {
     teacherId: mongoose.Types.ObjectId;
-    contractType: number;
+    naming: number;
+    archHours: number;
     availability: string[];
     desiredSubjects: string[];
     hasAdministrativePos: boolean;
@@ -16,7 +17,7 @@ const AvailabilitySchema = new mongoose.Schema<Availability>({
         type: mongoose.Schema.Types.ObjectId,
         required: [true, "La disponibilidad debe estar asignada a un maestro"]
     },
-    contractType: {
+    naming: {
         type: Number,
         min: 0,
         max: 3,
@@ -26,11 +27,20 @@ const AvailabilitySchema = new mongoose.Schema<Availability>({
         },
         required: [true, "El campo de nombramiento es obligatorio"]
     },
+    archHours: {
+        type: Number,
+        default: 0,
+        validate: {
+            validator: (val: number) => (Number.isInteger(val) && val >= 0),
+            message: "El campo de horas asignadas debe contener un numero entero mayor o igual que 0"
+        },
+        required: [true, "El campo de horas designadas es obligatorio"]
+    },
     availability: {
         type: [String],
         validate: {
             validator: validateAvailability,
-            message: "El campo de disponibilidad debe contener un numero binario de 14 digitos",
+            message: "El campo de disponibilidad debe contener 6 numeros binarios de 14 digitos",
         },
         required: [true, "El campo de disponibilidad es obligatorio"]
     },
@@ -43,7 +53,7 @@ const AvailabilitySchema = new mongoose.Schema<Availability>({
                 }
                 for (const val of vals) {
                     if (!validateSubject(val)) {
-                        return false
+                        return false;
                     }
                 }
                 return true;
@@ -55,7 +65,7 @@ const AvailabilitySchema = new mongoose.Schema<Availability>({
     hasAdministrativePos: {
         type: Boolean,
         default: false,
-        required: [true, "El campo de posicion administrativa es obligatorio"]
+        required: [true, "El campo de posición administrativa es obligatorio"]
     }
 })
 

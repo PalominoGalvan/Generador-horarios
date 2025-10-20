@@ -8,12 +8,10 @@ import validatePositiveNumber from '../utils/number_validator'
 
 //datos para el formulario
 interface FormData {
-  nombramiento: 'tiempo_completo' | 'tiempo_parcial_definitivo' | 'tiempo_parcial_indefinido' | '';
-  horasDefinidas?: number;
-  departamento?: 'arquitectura' | 'diseno' | 'otro';
-  puestoAdministrativo: 'si' | 'no' | '';
-  disponibilidad: Record<string, boolean[]>;
-  udasInteres: string[];
+  archHours: number;
+  hasAdministrativePos: 'si' | 'no' | '';
+  availability: Record<string, boolean[]>;
+  desiredSubjects: string[];
 }
 
 //Estado inicial para poder resetear el formulario
@@ -26,18 +24,19 @@ const disponibilidadInicial = DIAS.reduce((acc, dia) => {
 }, {} as Record<string, boolean[]>);
 
 const initialState: FormData = {
-  nombramiento: '',
-  puestoAdministrativo: '',
-  disponibilidad: disponibilidadInicial,
-  udasInteres: [],
+  archHours: 0,
+  hasAdministrativePos: '',
+  availability: disponibilidadInicial,
+  desiredSubjects: [],
 };
 
 // Estado para los errores de validación
 interface FormErrors {
-  nombramiento?: string;
+  naming?: string;
+  archHours?: string;
   horasDefinidas?: string;
-  puestoAdministrativo?: string;
-  udasInteres?: string;
+  hasAdministrativePos?: string;
+  desiredSubjects?: string;
 }
 
 
@@ -54,32 +53,25 @@ export default function CargaAcademicaPage() {
   //Manejadores de cambios en los inputs
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-
-    let processedValue =value;
-
-    if (name === 'nombres' || name === 'apellidos') {
-      processedValue = value.toUpperCase();
-    }
-
-    setFormData(prev => ({ ...prev, [name]: processedValue }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleDisponibilidadChange = (dia: string, horaIndex: number) => {
     setFormData(prev => {
-      const nuevaDisponibilidad = { ...prev.disponibilidad };
+      const nuevaDisponibilidad = { ...prev.availability };
       const nuevoArrayDia = [...nuevaDisponibilidad[dia]]; 
       nuevoArrayDia[horaIndex] = !nuevoArrayDia[horaIndex];
       nuevaDisponibilidad[dia] = nuevoArrayDia;
-      return { ...prev, disponibilidad: nuevaDisponibilidad };
+      return { ...prev, availability: nuevaDisponibilidad };
     });
   };
 
   const handleUdaChange = (uda: string) => {
     setFormData(prev => {
-      const nuevasUdas = prev.udasInteres.includes(uda)
-        ? prev.udasInteres.filter(u => u !== uda)
-        : [...prev.udasInteres, uda];
-      return { ...prev, udasInteres: nuevasUdas };
+      const nuevasUdas = prev.desiredSubjects.includes(uda)
+        ? prev.desiredSubjects.filter(u => u !== uda)
+        : [...prev.desiredSubjects, uda];
+      return { ...prev, desiredSubjects: nuevasUdas };
     });
   };
 
@@ -90,14 +82,13 @@ export default function CargaAcademicaPage() {
     const strValue = String(value || '');
 
     switch (name) {
-      case 'nombramiento':
-      case 'puestoAdministrativo':
+      case 'hasAdministrativePos':
         if (!strValue) errorMessage = 'Debes seleccionar una opción.';
         break;
-      case 'horasDefinidas':
+      case 'archHours':
         const numValue = Number(value);
-        if (formData.nombramiento === 'tiempo_parcial_definitivo' && !validatePositiveNumber(numValue)) {
-          errorMessage = 'Debe ser un número entero y positivo.';
+        if (!validatePositiveNumber(numValue)) {
+          errorMessage = 'Debe ser un número entero y mayor o igual que cero.';
         }
         break;
     }
@@ -117,20 +108,19 @@ export default function CargaAcademicaPage() {
     const newErrors: FormErrors = {};
 
     // Re-valida todos los campos
-    if (!formData.nombramiento) newErrors.nombramiento = 'Debes seleccionar un nombramiento.';
-    if (formData.nombramiento === 'tiempo_parcial_definitivo' && !validatePositiveNumber(Number(formData.horasDefinidas))) {
-      newErrors.horasDefinidas = 'El número de horas es inválido.';
+    if (Number.isInteger(formData.archHours) && formData.archHours >= 0) {
+      newErrors.archHours = 'El número de horas es inválido.';
     }
-    if (!formData.puestoAdministrativo) newErrors.puestoAdministrativo = 'Debes seleccionar una opción.';
-    if (formData.udasInteres.length === 0) {
-      newErrors.udasInteres = 'Debes seleccionar al menos una UDA de interés.';
+    if (formData.hasAdministrativePos === '') newErrors.hasAdministrativePos = 'Debes seleccionar una opción.';
+    if (formData.desiredSubjects.length === 0) {
+      newErrors.desiredSubjects = 'Debes seleccionar al menos una UDA de interés.';
       // (Opcional) Mostramos este error cerca del botón de envío o del título de UDAs
     }
 
     setErrors(newErrors);
     
     // Retorna true si el objeto newErrors está vacío (sin errores)
-    return Object.keys(newErrors).length === 0;
+    return Object.keys(newErrors).length == 0;
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -144,18 +134,20 @@ export default function CargaAcademicaPage() {
 
     setStatus({ type: 'loading', message: 'Enviando información...' });
 
-    const dataToSend = { ...formData };
-  
     try {
       const response = await fetch('/api/profesores', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData), 
+        body: JSON.stringify({ 
+          ...formData,
+          availability: Object.keys(formData.availability).map((key: string) => formData.availability[key].map(v => Number(v)).join('')),
+        }), 
       });
 
       const responseBody = await response.json();
+
       if (!response.ok) {
         throw new Error(responseBody.error || responseBody.message || `Error del servidor: ${response.statusText}`);
       }
@@ -189,26 +181,12 @@ export default function CargaAcademicaPage() {
           <div className="border-b border-gray-200 pb-6">
             <h2 className="text-xl font-semibold text-black mb-4">Información Laboral</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {renderInputSelect('nombramiento', 'Nombramiento', [
-                { value: 'tiempo_completo', label: 'Profesor de Tiempo Completo' },
-                { value: 'tiempo_parcial_definitivo', label: 'Profesor de Tiempo Parcial con horas definitivas' },
-                { value: 'tiempo_parcial_indefinido', label: 'Profesor de Tiempo Parcial sin horas definitivas' },
-              ])}
               
-              {formData.nombramiento === 'tiempo_parcial_definitivo' && (
-                <>
-                  {renderInput('horasDefinidas', '¿Cuántas horas tiene definidas?', 'number')}
-                  {renderInputSelect('departamento', 'Departamento', [
-                    { value: 'arquitectura', label: 'Arquitectura' },
-                    { value: 'diseno', label: 'Diseño' },
-                    { value: 'otro', label: 'Otro' },
-                  ])}
-                </>
-              )}
+              {renderInput('archHours', '¿Cuántas horas tiene definidas en el departamento de arquitectura?', 'number')}
 
-              {renderInputSelect('puestoAdministrativo', '¿Tiene un puesto administrativo adicional?', [
-                { value: 'si', label: 'Sí' },
-                { value: 'no', label: 'No' },
+              {renderInputSelect('hasAdministrativePos', '¿Tiene un puesto administrativo adicional?', [
+                { value: 'true', label: 'Sí' },
+                { value: 'false', label: 'No' },
               ])}
             </div>
           </div>
@@ -239,7 +217,7 @@ export default function CargaAcademicaPage() {
                           <input
                             type="checkbox"
                             className="h-5 w-5 rounded text-[#5C8AA8] focus:ring-[#4F7842] border-gray-300 cursor-pointer"
-                            checked={formData.disponibilidad[dia][horaIndex]}
+                            checked={formData.availability[dia][horaIndex]}
                             onChange={() => handleDisponibilidadChange(dia, horaIndex)}
                           />
                         </td>
@@ -262,13 +240,18 @@ export default function CargaAcademicaPage() {
                     id={`uda-${uda}`}
                     type="checkbox"
                     className="h-4 w-4 rounded text-[#5C8AA8] focus:ring-[#4F7842] border-gray-300"
-                    checked={formData.udasInteres.includes(uda)}
+                    checked={formData.desiredSubjects.includes(uda)}
                     onChange={() => handleUdaChange(uda)}
                   />
                   <label htmlFor={`uda-${uda}`} className="ml-2 block text-sm text-black">{uda}</label>
                 </div>
               ))}
             </div>
+            {errors.desiredSubjects && (
+              <p className={`text-sm mb-4 ${status.type === 'success' ? 'text-[#4F7842]' : 'text-[#AD0D00]'}`}>
+                {errors.desiredSubjects}
+              </p>
+            )}
           </div>
           
           {/* --- SECCIÓN DE BOTONES (MODIFICADA) --- */}
@@ -282,7 +265,6 @@ export default function CargaAcademicaPage() {
         )}
 
         <div className="flex justify-between items-center gap-4">
-          {/* --- Botón "Siguiente" (Paso 1) o "Enviar" (Paso 2) --- */}
           <button
             type="submit" // Este SÍ es type="submit"
             disabled={status.type === 'loading'}
@@ -315,7 +297,7 @@ export default function CargaAcademicaPage() {
           //Llama a la validación al salir del campo ---
           onBlur={handleBlur} 
           placeholder={placeholder}
-          required={name !== 'horasDefinidas'}
+          required={name !== 'archHours'}
           className={`
             mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm text-black
             focus:border-[#5C8AA8] focus:ring-[#5C8AA8]
@@ -351,7 +333,6 @@ export default function CargaAcademicaPage() {
             ${isInvalid ? 'border-red-500 ring-red-500 focus:border-red-500 focus:ring-red-500' : ''}
           `} // Añade clases de error
         >
-          <option value="">Selecciona una opción</option>
           {options.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
         </select>
         {/* --- AÑADIDO: Muestra el mensaje de error --- */}
