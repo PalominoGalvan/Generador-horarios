@@ -3,26 +3,42 @@
 import { useState, FormEvent } from 'react';
 import validateEmail from '../utils/email_validator';
 import validatePassword from '../utils/password_validator';
+import { useRouter } from 'next/navigation';
+import sleep from '../utils/sleep';
+import validateNUA from '../utils/nua_validator';
+import validateName from '../utils/name_validator';
 
 interface FormData {
+  nue: string;
+  lastName: string;
+  firstName: string;
+  phoneNumber: string;
   emails: string[],
   password: string,
   passwordConfirm: string,
 }
 
 const initialState: FormData = {
+  nue: '',
+  lastName: '',
+  firstName: '',
+  phoneNumber: '',
   emails: ['', ''],
   password: '',
   passwordConfirm: ''
 };
 
 interface FormErrors {
-    emails?: string,
+    nue?: string;
+    lastName?: string;
+    firstName?: string;
+    phoneNumber?: string;
+    emails?: string[],
     password?: string,
     passwordConfirm?: string,
 }
 
-export default function CargaAcademicaPage() {
+export default function RegistroPage() {
   const [formData, setFormData] = useState<FormData>(initialState);
   const [passwordVisibility, setPasswordVisibility] = useState<boolean[]>([false, false]);
   const [errors, setErrors] = useState<FormErrors>({});
@@ -30,6 +46,7 @@ export default function CargaAcademicaPage() {
     type: 'idle',
     message: '',
   });
+  const router = useRouter();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -46,6 +63,10 @@ export default function CargaAcademicaPage() {
   const validateField = (name: keyof FormData, value: string | undefined) => {
     let msg: string | undefined;
     const strValue = String(value || '');
+    if (name.includes('emails') && !validateEmail(strValue)) msg = "El correo electronico no es valido.";
+    if (!validateNUA(strValue)) msg = 'El NUE debe contener 6 dígitos numéricos.';
+    if (!validateName(strValue)) msg = 'El nombre es requerido.';
+    if (!validateName(strValue)) msg = 'Los apellidos son requeridos.';
     if (name === 'password' && !validatePassword(strValue)) msg = "La contrasena debe tener al menos 12 caracteres, con al menos una minuscula, una mayuscula, un numero y un caracter especial (-+_!@#$%^&*.,?).";
     if (name === 'passwordConfirm' && formData.password !== formData.passwordConfirm) msg = "Las contrasenas no coinciden.";
     setErrors(prev => ({ ...prev, [name]: msg }));
@@ -58,8 +79,16 @@ export default function CargaAcademicaPage() {
 
   const validateForm = () => {
     let errors: FormErrors = {};
-    if (!validatePassword(formData.password)) errors.password = "La contrasena debe tener al menos 12 caracteres, con al menos una minuscula, una mayuscula, un numero y un caracter especial (-+_!@#$%^&*.,?).";
-    if (formData.password !== formData.passwordConfirm) errors.passwordConfirm = "Las contrasenas no coinciden.";
+    if (!validateNUA(formData.nue)) errors.nue = 'El NUE debe contener 6 dígitos numéricos.';
+    if (!validateName(formData.firstName)) errors.firstName = 'El nombre es requerido.';
+    if (!validateName(formData.lastName)) errors.lastName = 'Los apellidos son requeridos.';
+    let email_errs = Array(formData.emails.length).fill('');
+    for (const [idx, email] of formData.emails.entries()) {
+        if (!validateEmail(email)) email_errs[idx] = "El correo electrónico no es valido.";
+    }
+    errors.emails = email_errs;
+    if (!validatePassword(formData.password)) errors.password = "La contraseña debe tener al menos 12 caracteres, con al menos una minúscula, una mayúscula, un numero y un caracter especial (-+_!@#$%^&*.,?).";
+    if (formData.password !== formData.passwordConfirm) errors.passwordConfirm = "Las contraseñas no coinciden.";
     setErrors(errors);
     return Object(errors).keys.length == 0;
   }
@@ -74,8 +103,6 @@ export default function CargaAcademicaPage() {
     }
 
     setStatus({ type: 'loading', message: 'Enviando información...' });
-
-    const dataToSend = { ...formData };
   
     try {
       const response = await fetch('/api/profesores', {
@@ -94,6 +121,9 @@ export default function CargaAcademicaPage() {
       console.log('Respuesta del servidor:', responseBody);
       setStatus({ type: 'success', message: responseBody.message });
 
+      await sleep(10000);
+      router.push('/');
+
     } catch (error: any) {
       console.error('Error al enviar el formulario:', error);
       setStatus({ type: 'error', message: error.message || 'No se pudo enviar el formulario. Intenta de nuevo.' });
@@ -107,12 +137,27 @@ export default function CargaAcademicaPage() {
           <h1 className="text-3xl font-bold text-black">Registro</h1>
         </header>
 
+        <h2 className="text-xl font-semibold text-black mb-4">Información Personal</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {renderInput('nue', 'NUE (Clave Única)', 'text', 'Ej. 123456')}
+          {renderInput('lastNames', 'Apellidos', 'text', 'Ej. Pérez García')}
+          {renderInput('firstNames', 'Nombre(s)', 'text', 'Ej. Juan Carlos')}
+          {renderInput('phoneNumber', 'Número Telefónico', 'tel', 'Ej. 4731234567')}
+        </div>
+
         <form onSubmit={handleSubmit} className="space-y-6">
           <>
             {formData.emails.map((_, idx) => {
-                return <div key={idx}>{renderInput(`emails[${idx}]`, "Correo Electronico", "email", "john.doe@ugto.mx", idx)}</div>;
+                return <div key={idx}>{renderInput(`emails[${idx}]`, "Correos Electronicos", "email", "john.doe@ugto.mx", idx)}</div>;
             })}
           </>
+          <button 
+            type='button'
+            onClick={() => setFormData(prev => ({...prev, emails: [...prev.emails, '']}))}
+            className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-[#4F7842] hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#4F7842] disabled:bg-opacity-50 disabled:cursor-not-allowed"
+          >
+            Agregar otro correo
+          </button>
           {renderInput("password", "Contrasena", passwordVisibility[0] ? "text" : "password", "************")}
           <p onClick={() => setPasswordVisibility(prev => [!prev[0], prev[1]])} className='block text-sm text-blue-800 underline'>Mostrar contrasena</p>
           {renderInput("passwordConfirm", "Confirmar Contrasena", passwordVisibility[1] ? "text" : "password", "************")}
@@ -139,12 +184,13 @@ export default function CargaAcademicaPage() {
     const isInvalid = !!error;
     return (
       <div>
-        {key === 0 && <label htmlFor={name} className="block text-sm font-medium text-black">{label}</label>}
+        {(key === 0 || key === undefined) && <label htmlFor={name} className="block text-sm font-medium text-black">{label}</label>}
         <input
           type={type}
           id={name}
           name={name}
           value={formData[name as keyof FormData] as string || ''}
+          onBlur={handleBlur}
           onChange={handleInputChange}
           placeholder={placeholder}
           required={true}
@@ -153,7 +199,7 @@ export default function CargaAcademicaPage() {
             focus:border-[#5C8AA8] focus:ring-[#5C8AA8]
           `}
         />
-        {isInvalid && (
+        {(isInvalid && error.length)&& (
           <p className="mt-1 text-sm text-red-600">{error}</p>
         )}
       </div>

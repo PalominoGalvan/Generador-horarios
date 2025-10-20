@@ -1,0 +1,64 @@
+import { NextResponse, type NextRequest } from "next/server";
+import dbConnect from "../../../../lib/dbConnect";
+import Teacher from "../../../../models/Teacher";
+import { hash } from "bcrypt";
+import validateNUA from "@/app/utils/nua_validator";
+import validateName from "@/app/utils/name_validator";
+import phoneValidator from "@/app/utils/phone_validator";
+import validatePassword from "@/app/utils/password_validator";
+import validateEmails from "@/app/utils/emails_validator";
+
+const required_fields = ['nua', 'firstName', 'lastName', 'emailAddress', 'password'];
+
+export async function POST(req: NextRequest) {
+    const data = await req.json();
+    try {
+        await dbConnect();
+        for (const field of required_fields) {
+            if (!data[field] || data[field].length == 0) {
+                return Response.json({ status: 405, message: `El campo ${field} no puede estar vacío.`});
+            }
+        }
+        let { nua, firstName, lastName, phoneNumber, emailAddress, password, ...other } = data;
+        firstName = firstName.toUpperCase();
+        lastName = lastName.toUpperCase();
+        if (!validateNUA(nua)) {
+            return NextResponse.json({ message: "La NUE no es valida." }, { status: 405 });
+        }
+        if (!validateName(firstName)) {
+            return NextResponse.json({ message: "El campo de nombres no es valido." }, { status: 405 });
+        }
+        if (!validateName(lastName)) {
+            return NextResponse.json({ message: "El campo de apellidos no es valido." }, { status: 405 });
+        }
+        if (!phoneValidator(phoneNumber)) {
+            return NextResponse.json({ message: "El campo de numero de telefono no es valido." }, { status: 405 });
+        }
+        if (!validatePassword(password)) {
+            return NextResponse.json({ message: "El campo de contrasena no es valido." }, { status: 405 });
+        }
+        if (!validateEmails(emailAddress)) {
+            return NextResponse.json({ message: "El campo de correos no es valido." }, { status: 405 });
+        }
+        let existing = await Teacher.findOne({ firstName, lastName });
+        if (existing) {
+            return Response.json({ status: 405, message: "Ya existe un profesor con esa combinacion de nombre y apellido." });
+        }
+        existing = await Teacher.findOne({ emailAddress: { $in: emailAddress } });
+        if (existing) {
+            return Response.json({ status: 405, message: "Ya existe un profesor con ese correo electrónico" });
+        }
+        existing = await Teacher.findOne({ phoneNumber });
+        if (existing) {
+            return Response.json({ status: 405, message: "Ya existe un profesor con ese numero de teléfono." });
+        }
+        password = await hash(password, 10);
+        existing = await Teacher.create({ nua, firstName, lastName, phoneNumber, emailAddress, password });
+        if (!existing) {
+            return Response.json({ status: 505, message: "Hubo un error inesperado." });
+        }
+        return Response.json({ status: 200, message: "Registro completado exitosamente." });
+    } catch (error: any) {
+        return Response.json({ status: 505, message: error.message });
+    }
+}

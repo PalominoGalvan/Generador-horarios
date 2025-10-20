@@ -4,21 +4,10 @@ import { useState, FormEvent } from 'react';
 import { subjects } from '../utils/subject_validator';
 
 //paquetes para validar
-import validateEmail from '../utils/email_validator';
-import validateUgtoEmail from '../utils/ugto_email_validator';
-import validateName from '../utils/name_validator';
-import validateNUA from '../utils/nua_validator';
-import phoneValidator from '../utils/phone_validator';
 import validatePositiveNumber from '../utils/number_validator'
 
 //datos para el formulario
 interface FormData {
-  nue: string;
-  apellidos: string;
-  nombres: string;
-  correoInstitucional: string;
-  correoAlterno: string;
-  telefono: string;
   nombramiento: 'tiempo_completo' | 'tiempo_parcial_definitivo' | 'tiempo_parcial_indefinido' | '';
   horasDefinidas?: number;
   departamento?: 'arquitectura' | 'diseno' | 'otro';
@@ -37,12 +26,6 @@ const disponibilidadInicial = DIAS.reduce((acc, dia) => {
 }, {} as Record<string, boolean[]>);
 
 const initialState: FormData = {
-  nue: '',
-  apellidos: '',
-  nombres: '',
-  correoInstitucional: '',
-  correoAlterno: '',
-  telefono: '',
   nombramiento: '',
   puestoAdministrativo: '',
   disponibilidad: disponibilidadInicial,
@@ -51,12 +34,6 @@ const initialState: FormData = {
 
 // Estado para los errores de validación
 interface FormErrors {
-  nue?: string;
-  apellidos?: string;
-  nombres?: string;
-  correoInstitucional?: string;
-  correoAlterno?: string;
-  telefono?: string;
   nombramiento?: string;
   horasDefinidas?: string;
   puestoAdministrativo?: string;
@@ -69,7 +46,6 @@ export default function CargaAcademicaPage() {
   
   const [formData, setFormData] = useState<FormData>(initialState);
   const [errors, setErrors] = useState<FormErrors>({});
-  const [currentStep, setCurrentStep] = useState<number>(1);
   const [status, setStatus] = useState<{ type: 'idle' | 'loading' | 'success' | 'error'; message: string }>({
     type: 'idle',
     message: '',
@@ -114,20 +90,6 @@ export default function CargaAcademicaPage() {
     const strValue = String(value || '');
 
     switch (name) {
-      case 'nue':
-        if (!validateNUA(strValue)) errorMessage = 'El NUE debe contener 6 dígitos numéricos.';
-        break;
-      case 'nombres':
-      case 'apellidos':
-        if (!validateName(strValue)) errorMessage = 'Este campo solo debe contener letras y espacios.';
-        break;
-      case 'correoInstitucional':
-        if (!validateUgtoEmail(strValue)) errorMessage = 'Formato de correo inválido. (ej. nombre@ugto.mx)';
-        break;
-      case 'correoAlterno':
-        // El correo alterno es opcional, pero si se escribe, debe ser válido
-        if (strValue && !validateEmail(strValue)) errorMessage = 'Formato de correo inválido.';
-        break;
       case 'nombramiento':
       case 'puestoAdministrativo':
         if (!strValue) errorMessage = 'Debes seleccionar una opción.';
@@ -155,12 +117,6 @@ export default function CargaAcademicaPage() {
     const newErrors: FormErrors = {};
 
     // Re-valida todos los campos
-    if (!validateNUA(formData.nue)) newErrors.nue = 'El NUE debe contener 6 dígitos numéricos.';
-    if (!validateName(formData.nombres)) newErrors.nombres = 'El nombre es requerido.';
-    if (!validateName(formData.apellidos)) newErrors.apellidos = 'Los apellidos son requeridos.';
-    if (!validateUgtoEmail(formData.correoInstitucional)) newErrors.correoInstitucional = 'El correo institucional es requerido.';
-    if (formData.correoAlterno && !validateEmail(formData.correoAlterno)) newErrors.correoAlterno = 'El correo alterno tiene formato inválido.';
-    if (!phoneValidator(formData.telefono)) newErrors.telefono = 'El teléfono es requerido.';
     if (!formData.nombramiento) newErrors.nombramiento = 'Debes seleccionar un nombramiento.';
     if (formData.nombramiento === 'tiempo_parcial_definitivo' && !validatePositiveNumber(Number(formData.horasDefinidas))) {
       newErrors.horasDefinidas = 'El número de horas es inválido.';
@@ -175,43 +131,6 @@ export default function CargaAcademicaPage() {
     
     // Retorna true si el objeto newErrors está vacío (sin errores)
     return Object.keys(newErrors).length === 0;
-  };
-
-  const validateStep1 = (): boolean => {
-    const newErrors: FormErrors = {};
-
-    // Validaciones del Paso 1
-    if (!validateNUA(formData.nue)) newErrors.nue = 'El NUE debe contener 6 dígitos numéricos.';
-    if (!validateName(formData.nombres)) newErrors.nombres = 'El nombre es requerido.';
-    if (!validateName(formData.apellidos)) newErrors.apellidos = 'Los apellidos son requeridos.';
-    if (!validateUgtoEmail(formData.correoInstitucional)) newErrors.correoInstitucional = 'El correo institucional es requerido.';
-    if (formData.correoAlterno && !validateEmail(formData.correoAlterno)) newErrors.correoAlterno = 'El correo alterno tiene formato inválido.';
-    if (!phoneValidator(formData.telefono)) newErrors.telefono = 'El teléfono debe ser de 10 dígitos.';
-    if (!formData.nombramiento) newErrors.nombramiento = 'Debes seleccionar un nombramiento.';
-    if (formData.nombramiento === 'tiempo_parcial_definitivo' && !validatePositiveNumber(Number(formData.horasDefinidas))) {
-      newErrors.horasDefinidas = 'El número de horas es inválido.';
-    }
-    if (!formData.puestoAdministrativo) newErrors.puestoAdministrativo = 'Debes seleccionar una opción.';
-    
-    setErrors(newErrors);
-    // Retorna true si el objeto newErrors está vacío
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleNextStep = () => {
-    const isValid = validateStep1();
-    if (isValid) {
-      setCurrentStep(2); // Avanza al siguiente paso
-      setStatus({ type: 'idle', message: '' }); // Limpia mensajes de error
-    } else {
-      // Muestra un error si la validación del paso 1 falla
-      setStatus({ type: 'error', message: 'Por favor, corrige los errores para continuar.' });
-    }
-  };
-
-  const handlePrevStep = () => {
-    setCurrentStep(1); // Regresa al paso anterior
-    setStatus({ type: 'idle', message: '' }); // Limpia mensajes de error
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -266,112 +185,91 @@ export default function CargaAcademicaPage() {
         </header>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {currentStep===1&&(
-            <>
-              {/* Sección de Información Personal */}
-              <div className="border-b border-gray-200 pb-6">
-                <h2 className="text-xl font-semibold text-black mb-4">Información Personal</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {renderInput('nue', 'NUE (Clave Única)', 'text', 'Ej. 123456')}
-                  {renderInput('apellidos', 'Apellidos', 'text', 'Ej. Pérez García')}
-                  {renderInput('nombres', 'Nombre(s)', 'text', 'Ej. Juan Carlos')}
-                  {renderInput('correoInstitucional', 'Correo Institucional', 'email', 'ejemplo@ugto.mx')}
-                  {renderInput('correoAlterno', 'Correo Alterno', 'email', 'ejemplo@gmail.com')}
-                  {renderInput('telefono', 'Número Telefónico', 'tel', 'Ej. 4731234567')}
-                </div>
-              </div>
-
-              {/* Sección de Información Laboral */}
-              <div className="border-b border-gray-200 pb-6">
-                <h2 className="text-xl font-semibold text-black mb-4">Información Laboral</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {renderInputSelect('nombramiento', 'Nombramiento', [
-                    { value: 'tiempo_completo', label: 'Profesor de Tiempo Completo' },
-                    { value: 'tiempo_parcial_definitivo', label: 'Profesor de Tiempo Parcial con horas definitivas' },
-                    { value: 'tiempo_parcial_indefinido', label: 'Profesor de Tiempo Parcial sin horas definitivas' },
+          {/* Sección de Información Laboral */}
+          <div className="border-b border-gray-200 pb-6">
+            <h2 className="text-xl font-semibold text-black mb-4">Información Laboral</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {renderInputSelect('nombramiento', 'Nombramiento', [
+                { value: 'tiempo_completo', label: 'Profesor de Tiempo Completo' },
+                { value: 'tiempo_parcial_definitivo', label: 'Profesor de Tiempo Parcial con horas definitivas' },
+                { value: 'tiempo_parcial_indefinido', label: 'Profesor de Tiempo Parcial sin horas definitivas' },
+              ])}
+              
+              {formData.nombramiento === 'tiempo_parcial_definitivo' && (
+                <>
+                  {renderInput('horasDefinidas', '¿Cuántas horas tiene definidas?', 'number')}
+                  {renderInputSelect('departamento', 'Departamento', [
+                    { value: 'arquitectura', label: 'Arquitectura' },
+                    { value: 'diseno', label: 'Diseño' },
+                    { value: 'otro', label: 'Otro' },
                   ])}
-                  
-                  {formData.nombramiento === 'tiempo_parcial_definitivo' && (
-                    <>
-                      {renderInput('horasDefinidas', '¿Cuántas horas tiene definidas?', 'number')}
-                      {renderInputSelect('departamento', 'Departamento', [
-                        { value: 'arquitectura', label: 'Arquitectura' },
-                        { value: 'diseno', label: 'Diseño' },
-                        { value: 'otro', label: 'Otro' },
-                      ])}
-                    </>
-                  )}
+                </>
+              )}
 
-                  {renderInputSelect('puestoAdministrativo', '¿Tiene un puesto administrativo adicional?', [
-                    { value: 'si', label: 'Sí' },
-                    { value: 'no', label: 'No' },
-                  ])}
-                </div>
-              </div>
-            </>
-          )}
+              {renderInputSelect('puestoAdministrativo', '¿Tiene un puesto administrativo adicional?', [
+                { value: 'si', label: 'Sí' },
+                { value: 'no', label: 'No' },
+              ])}
+            </div>
+          </div>
           
-          {currentStep===2 &&(
-            <>
-              {/* Disponibilidad de Horario */}
-              <div>
-                <h2 className="text-xl font-semibold text-black mb-4">Disponibilidad de Horario</h2>
-                <p className="text-sm text-gray-500 mb-4">
-                  Seleccione las horas en que puede impartir clase. Cada celda representa una hora. 
-                  Haga clic en las horas disponibles; se marcarán en verde.
-                </p>
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200 border border-gray-200">
-                    <thead className="bg-gray-100">
-                      <tr>
-                        <th className="px-2 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Hora</th>
-                        {DIAS.map(dia => (
-                          <th key={dia} className="px-2 py-3 text-center text-xs font-medium text-gray-600 uppercase tracking-wider">{dia}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {HORAS.map((hora, horaIndex) => (
-                        <tr key={hora}>
-                          <td className="px-2 py-2 whitespace-nowrap text-sm font-medium text-gray-700">{hora}</td>
-                          {DIAS.map(dia => (
-                            <td key={dia} className="text-center">
-                              <input
-                                type="checkbox"
-                                className="h-5 w-5 rounded text-[#5C8AA8] focus:ring-[#4F7842] border-gray-300 cursor-pointer"
-                                checked={formData.disponibilidad[dia][horaIndex]}
-                                onChange={() => handleDisponibilidadChange(dia, horaIndex)}
-                              />
-                            </td>
-                          ))}
-                        </tr>
+          {/* Disponibilidad de Horario */}
+          <div>
+            <h2 className="text-xl font-semibold text-black mb-4">Disponibilidad de Horario</h2>
+            <p className="text-sm text-gray-500 mb-4">
+              Seleccione las horas en que puede impartir clase. Cada celda representa una hora. 
+              Haga clic en las horas disponibles; se marcarán en verde.
+            </p>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200 border border-gray-200">
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th className="px-2 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Hora</th>
+                    {DIAS.map(dia => (
+                      <th key={dia} className="px-2 py-3 text-center text-xs font-medium text-gray-600 uppercase tracking-wider">{dia}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {HORAS.map((hora, horaIndex) => (
+                    <tr key={hora}>
+                      <td className="px-2 py-2 whitespace-nowrap text-sm font-medium text-gray-700">{hora}</td>
+                      {DIAS.map(dia => (
+                        <td key={dia} className="text-center">
+                          <input
+                            type="checkbox"
+                            className="h-5 w-5 rounded text-[#5C8AA8] focus:ring-[#4F7842] border-gray-300 cursor-pointer"
+                            checked={formData.disponibilidad[dia][horaIndex]}
+                            onChange={() => handleDisponibilidadChange(dia, horaIndex)}
+                          />
+                        </td>
                       ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              {/* UDAs de Interés */}
-              <div>
-                <h2 className="text-xl font-semibold text-black mb-4">UDAs de Interés</h2>
-                <p className="text-sm text-gray-500 mb-4">Marque las unidades de aprendizaje (UDAs) que le gustaría impartir o en las que tiene experiencia.</p>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                  {subjects.map(uda => (
-                    <div key={uda} className="flex items-center">
-                      <input
-                        id={`uda-${uda}`}
-                        type="checkbox"
-                        className="h-4 w-4 rounded text-[#5C8AA8] focus:ring-[#4F7842] border-gray-300"
-                        checked={formData.udasInteres.includes(uda)}
-                        onChange={() => handleUdaChange(uda)}
-                      />
-                      <label htmlFor={`uda-${uda}`} className="ml-2 block text-sm text-black">{uda}</label>
-                    </div>
+                    </tr>
                   ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* UDAs de Interés */}
+          <div>
+            <h2 className="text-xl font-semibold text-black mb-4">UDAs de Interés</h2>
+            <p className="text-sm text-gray-500 mb-4">Marque las unidades de aprendizaje (UDAs) que le gustaría impartir o en las que tiene experiencia.</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+              {subjects.map(uda => (
+                <div key={uda} className="flex items-center">
+                  <input
+                    id={`uda-${uda}`}
+                    type="checkbox"
+                    className="h-4 w-4 rounded text-[#5C8AA8] focus:ring-[#4F7842] border-gray-300"
+                    checked={formData.udasInteres.includes(uda)}
+                    onChange={() => handleUdaChange(uda)}
+                  />
+                  <label htmlFor={`uda-${uda}`} className="ml-2 block text-sm text-black">{uda}</label>
                 </div>
-              </div>
-            </>
-          )}
+              ))}
+            </div>
+          </div>
           
           {/* --- SECCIÓN DE BOTONES (MODIFICADA) --- */}
       <div className="pt-5">
@@ -384,40 +282,14 @@ export default function CargaAcademicaPage() {
         )}
 
         <div className="flex justify-between items-center gap-4">
-          
-          {/* --- Botón "Volver" (Solo en Paso 2) --- */}
-          <div> {/* Usamos div para que justify-between funcione */}
-            {currentStep === 2 && (
-              <button
-                type="button" // IMPORTANTE: type="button" para no enviar el formulario
-                onClick={handlePrevStep}
-                className="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#5C8AA8]"
-              >
-                Volver
-              </button>
-            )}
-          </div>
-
           {/* --- Botón "Siguiente" (Paso 1) o "Enviar" (Paso 2) --- */}
-          <div>
-            {currentStep === 1 ? (
-              <button
-                type="button" // IMPORTANTE: type="button"
-                onClick={handleNextStep}
-                className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-[#5C8AA8] hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#5C8AA8]"
-              >
-                Siguiente
-              </button>
-            ) : (
-              <button
-                type="submit" // Este SÍ es type="submit"
-                disabled={status.type === 'loading'}
-                className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-[#4F7842] hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#4F7842] disabled:bg-opacity-50 disabled:cursor-not-allowed"
-              >
-                {status.type === 'loading' ? 'Enviando...' : 'Enviar'}
-              </button>
-            )}
-          </div>
+          <button
+            type="submit" // Este SÍ es type="submit"
+            disabled={status.type === 'loading'}
+            className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-[#4F7842] hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#4F7842] disabled:bg-opacity-50 disabled:cursor-not-allowed"
+          >
+            {status.type === 'loading' ? 'Enviando...' : 'Enviar'}
+          </button>
         </div>
       </div>
       

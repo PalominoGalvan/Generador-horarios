@@ -7,7 +7,7 @@ export interface Availability extends mongoose.Document {
     contractType: number;
     availability: string[];
     desiredSubjects: string[];
-    hasAdministrativePosition: boolean;
+    hasAdministrativePos: boolean;
 }
 
 const AvailabilitySchema = new mongoose.Schema<Availability>({
@@ -30,7 +30,7 @@ const AvailabilitySchema = new mongoose.Schema<Availability>({
         type: [String],
         validate: {
             validator: validateAvailability,
-            message: "El campo de disponibilidad debe contener un numero binario de al menos 24 digitos",
+            message: "El campo de disponibilidad debe contener un numero binario de 14 digitos",
         },
         required: [true, "El campo de disponibilidad es obligatorio"]
     },
@@ -52,7 +52,7 @@ const AvailabilitySchema = new mongoose.Schema<Availability>({
         },
         required: [true, "El campo de materias deseadas es obligatorio"]
     },
-    hasAdministrativePosition: {
+    hasAdministrativePos: {
         type: Boolean,
         default: false,
         required: [true, "El campo de posicion administrativa es obligatorio"]

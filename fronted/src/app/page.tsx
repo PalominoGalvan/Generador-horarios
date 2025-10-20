@@ -14,6 +14,7 @@ const initialState: FormData = {
 
 export default function CargaAcademicaPage() {
   const [formData, setFormData] = useState<FormData>(initialState);
+  const [showPassword, setPasswordVisibility] = useState<boolean>(false);
   const [status, setStatus] = useState<{ type: 'idle' | 'loading' | 'success' | 'error'; message: string }>({
     type: 'idle',
     message: '',
@@ -70,7 +71,8 @@ export default function CargaAcademicaPage() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {renderInput("email", "Correo Electronico", "email", "john.doe@ugto.mx")}
-          {renderInput("password", "Contrasena", "password", "************")}
+          {renderInput("password", "Contrasena", showPassword ? "text" : "password", "************")}
+          <p onClick={() => setPasswordVisibility(prev => !prev)} className='block text-sm text-blue-800 underline'>Mostrar contrasena</p>
           {(status.type === 'error' || status.type === 'success') && (
             <p className={`text-sm mb-4 ${status.type === 'success' ? 'text-[#4F7842]' : 'text-[#AD0D00]'}`}>
               {status.message}
