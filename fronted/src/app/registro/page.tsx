@@ -74,7 +74,7 @@ export default function RegistroPage() {
     const strValue = String(value || '');
     if (name.includes('emails') && name !== 'instEmail' && !validateEmail(strValue)) msg = "El correo electrónico no es valido.";
     if (name === 'instEmail' && strValue.length > 0 && !validateEmail(strValue)) msg = "El correo institucional no es valido";
-    if (name === 'nua' && !validateNUA(strValue)) msg = 'El NUE debe contener 6 dígitos numéricos.';
+    if (name === 'nua' && !validateNUA(strValue)) msg = 'El NUE debe contener 5 dígitos numéricos.';
     if (name === 'firstName' && !validateName(strValue)) msg = 'El nombre es requerido.';
     if (name === 'lastName' && !validateName(strValue)) msg = 'Los apellidos son requeridos.';
     if (name === 'password' && !validatePassword(strValue)) msg = "La contraseña debe tener al menos 12 caracteres, con al menos una minúscula, una mayúscula, un numero y un caracter especial (-+_!@#$%^&*.,?).";
@@ -89,7 +89,7 @@ export default function RegistroPage() {
 
   const validateForm = () => {
     let errors: FormErrors = {};
-    if (!validateNUA(formData.nua)) errors.nua = 'El NUE debe contener 6 dígitos numéricos.';
+    if (!validateNUA(formData.nua)) errors.nua = 'El NUE debe contener 5 dígitos numéricos.';
     if (!validateName(formData.firstName)) errors.firstName = 'El nombre es requerido.';
     if (!validateName(formData.lastName)) errors.lastName = 'Los apellidos son requeridos.';
     if (formData.instEmail.length > 0 && !validateEmail(formData.instEmail)) errors.instEmail = 'El correo institucional no es valido.';
