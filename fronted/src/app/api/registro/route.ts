@@ -7,6 +7,7 @@ import validateName from "@/app/utils/name_validator";
 import phoneValidator from "@/app/utils/phone_validator";
 import validatePassword from "@/app/utils/password_validator";
 import validateEmails from "@/app/utils/emails_validator";
+import { sign } from "jsonwebtoken";
 
 const required_fields = ['firstName', 'lastName', 'emailAddress', 'password'];
 
@@ -57,7 +58,20 @@ export async function POST(req: NextRequest) {
         if (!existing) {
             return Response.json({ status: 505, message: "Hubo un error inesperado." });
         }
-        return Response.json({ status: 200, message: "Registro completado exitosamente." });
+        const token = sign(
+            { id: existing.id, name: `${existing.firstName} ${existing.lastName}` },
+            process.env.JWT_SECRET!,
+            { expiresIn: Number(process.env.JWT_EXPIRES_IN!) }
+        );
+        const response = NextResponse.json({ message: "Has iniciado sesion exitosamente." }, { status: 200 });
+        response.cookies.set('authToken', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: Number(process.env.JWT_EXPIRES_IN),
+            path: '/'
+        });
+        return response;
     } catch (error: any) {
         return NextResponse.json({ message: error.message }, { status: 505 });
     }
