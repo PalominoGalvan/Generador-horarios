@@ -8,6 +8,7 @@ import phoneValidator from "@/app/utils/phone_validator";
 import validatePassword from "@/app/utils/password_validator";
 import validateEmails from "@/app/utils/emails_validator";
 import { sign } from "jsonwebtoken";
+import validateUgtoEmail from "@/app/utils/ugto_email_validator";
 
 const required_fields = ['firstName', 'lastName', 'emailAddress', 'password'];
 
@@ -20,7 +21,7 @@ export async function POST(req: NextRequest) {
                 return NextResponse.json({ message: `El campo ${field} no puede estar vacío.`}, { status: 405 });
             }
         }
-        let { nua, firstName, lastName, phoneNumber, emailAddress, password, ...other } = data;
+        let { nua, firstName, lastName, phoneNumber, emailAddress, password, instEmail, ...other } = data;
         firstName = firstName.toUpperCase();
         lastName = lastName.toUpperCase();
         if (nua && !validateNUA(nua)) {
@@ -37,6 +38,9 @@ export async function POST(req: NextRequest) {
         }
         if (!validatePassword(password)) {
             return NextResponse.json({ message: "El campo de contraseña no es valido." }, { status: 405 });
+        }
+        if (instEmail && instEmail.length > 0 && !validateUgtoEmail(instEmail)) {
+            return NextResponse.json({ message: "El correo institucional no es valido." }, { status: 405 });
         }
         if (!validateEmails(emailAddress)) {
             return NextResponse.json({ message: "El campo de correos no es valido." }, { status: 405 });
@@ -73,6 +77,6 @@ export async function POST(req: NextRequest) {
         });
         return response;
     } catch (error: any) {
-        return NextResponse.json({ message: error.message }, { status: 505 });
+        return NextResponse.json({ message: error.message }, { status: 500 });
     }
 }

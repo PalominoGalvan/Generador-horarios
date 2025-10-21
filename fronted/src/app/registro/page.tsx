@@ -13,6 +13,7 @@ interface FormData {
   lastName: string;
   firstName: string;
   phoneNumber: string;
+  instEmail: string;
   emails: string[],
   password: string,
   passwordConfirm: string,
@@ -23,6 +24,7 @@ const initialState: FormData = {
   lastName: '',
   firstName: '',
   phoneNumber: '',
+  instEmail: '',
   emails: [''],
   password: '',
   passwordConfirm: ''
@@ -33,6 +35,7 @@ interface FormErrors {
     firstName?: string;
     lastName?: string;
     phoneNumber?: string;
+    instEmail?: string;
     emails?: string[],
     password?: string,
     passwordConfirm?: string,
@@ -69,7 +72,8 @@ export default function RegistroPage() {
   const validateField = (name: keyof FormData, value: string | undefined) => {
     let msg: string | undefined;
     const strValue = String(value || '');
-    if (name.includes('emails') && !validateEmail(strValue)) msg = "El correo electrónico no es valido.";
+    if (name.includes('emails') && name !== 'instEmail' && !validateEmail(strValue)) msg = "El correo electrónico no es valido.";
+    if (name === 'instEmail' && strValue.length > 0 && !validateEmail(strValue)) msg = "El correo institucional no es valido";
     if (name === 'nua' && !validateNUA(strValue)) msg = 'El NUE debe contener 6 dígitos numéricos.';
     if (name === 'firstName' && !validateName(strValue)) msg = 'El nombre es requerido.';
     if (name === 'lastName' && !validateName(strValue)) msg = 'Los apellidos son requeridos.';
@@ -88,6 +92,7 @@ export default function RegistroPage() {
     if (!validateNUA(formData.nua)) errors.nua = 'El NUE debe contener 6 dígitos numéricos.';
     if (!validateName(formData.firstName)) errors.firstName = 'El nombre es requerido.';
     if (!validateName(formData.lastName)) errors.lastName = 'Los apellidos son requeridos.';
+    if (formData.instEmail.length > 0 && !validateEmail(formData.instEmail)) errors.instEmail = 'El correo institucional no es valido.';
     let email_errs = Array(formData.emails.length).fill('');
     for (const [idx, email] of formData.emails.entries()) {
         if (!validateEmail(email)) email_errs[idx] = "El correo electrónico no es valido.";
@@ -147,14 +152,15 @@ export default function RegistroPage() {
         <form onSubmit={handleSubmit} className="space-y-6">
           <h2 className="text-xl font-semibold text-black mb-4">Información Personal</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {renderInput('nua', 'NUE (Clave Única) (Opcional)', 'text', 'Ej. 123456')}
+            {renderInput('nua', 'NUE (Clave Única)', 'text', 'Ej. 123456')}
             {renderInput('lastName', 'Apellidos', 'text', 'Ej. Pérez García')}
             {renderInput('firstName', 'Nombre(s)', 'text', 'Ej. Juan Carlos')}
             {renderInput('phoneNumber', 'Número Telefónico', 'tel', 'Ej. 4731234567')}
+            {renderInput('instEmail', 'Correo Institucional', 'email', 'john.doe@ugto.mx')}
           </div>
           <>
             {formData.emails.map((_, idx) => {
-                return <div key={idx}>{renderInput(`emails[${idx}]`, "Correos Electronicos", "email", "john.doe@gmail.com", idx)}</div>;
+                return <div key={idx}>{renderInput(`emails[${idx}]`, "Correos Electronicos Alternativos", "email", "john.doe@gmail.com", idx)}</div>;
             })}
           </>
           <button 
@@ -165,9 +171,9 @@ export default function RegistroPage() {
             Agregar otro correo
           </button>
           {renderInput("password", "Contraseña", passwordVisibility[0] ? "text" : "password", "************")}
-          <p onClick={() => setPasswordVisibility(prev => [!prev[0], prev[1]])} className='block text-sm text-blue-800 underline'>Mostrar contrasena</p>
+          <p onClick={() => setPasswordVisibility(prev => [!prev[0], prev[1]])} className='block text-sm text-blue-800 underline'>Mostrar contraseña</p>
           {renderInput("passwordConfirm", "Confirmar Contraseña", passwordVisibility[1] ? "text" : "password", "************")}
-          <p onClick={() => setPasswordVisibility(prev => [prev[0], !prev[1]])} className='block text-sm text-blue-800 underline'>Mostrar contrasena</p>
+          <p onClick={() => setPasswordVisibility(prev => [prev[0], !prev[1]])} className='block text-sm text-blue-800 underline'>Mostrar contraseña</p>
           {(status.type === 'error' || status.type === 'success') && (
             <p className={`text-sm mb-4 ${status.type === 'success' ? 'text-[#4F7842]' : 'text-[#AD0D00]'}`}>
               {status.message}
