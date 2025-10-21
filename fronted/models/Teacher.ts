@@ -19,7 +19,7 @@ const TeacherSchema = new mongoose.Schema<Teacher>({
         type: String,
         validate: {
             validator: validateNUA,
-            message: "La NUA debe contener exactamente 6 digitos"
+            message: "La NUA debe contener exactamente 5 digitos"
         },
     },
     firstName: {
