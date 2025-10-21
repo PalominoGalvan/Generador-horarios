@@ -3,7 +3,6 @@ import validateName from "@/app/utils/name_validator";
 import phoneValidator from "@/app/utils/phone_validator";
 import validateNUA from "@/app/utils/nua_validator";
 import validateEmails from "@/app/utils/emails_validator";
-import validateUgtoEmail from "@/app/utils/ugto_email_validator";
 
 export interface Teacher extends mongoose.Document {
     nua: string;
@@ -12,7 +11,6 @@ export interface Teacher extends mongoose.Document {
     isActive: boolean;
     phoneNumber: string;
     emailAddress: string[];
-    instEmail: string;
     password: string;
 }
 
@@ -49,9 +47,9 @@ const TeacherSchema = new mongoose.Schema<Teacher>({
         type: String,
         validator: {
             validate: phoneValidator,
-            message: "El numero de telefono no es valido"
+            message: "El numero de celular no es valido"
         },
-        required: [true, "El telefono es un campo obligatorio"],
+        required: [true, "El numero de celular es un campo obligatorio"],
     },
     emailAddress: {
         type: [String],
@@ -60,13 +58,6 @@ const TeacherSchema = new mongoose.Schema<Teacher>({
             message: "El campo debe tener al menos un correo. Alguno se repite o no es valido"
         },
         required: [true, "El campo de correos es obligatorio"]
-    },
-    instEmail: {
-        type: String,
-        validate: {
-            validator: (val: string) => (val.length == 0 || validateUgtoEmail(val)),
-            message: "El campo de correo institucional no es valido"
-        }
     },
     password: {
         type: String,

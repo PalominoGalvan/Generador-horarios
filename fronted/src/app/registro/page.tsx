@@ -152,10 +152,10 @@ export default function RegistroPage() {
         <form onSubmit={handleSubmit} className="space-y-6">
           <h2 className="text-xl font-semibold text-black mb-4">Información Personal</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {renderInput('nua', 'NUE (Clave Única)', 'text', 'Ej. 123456')}
+            {renderInput('nua', 'NUE (Número de Empleado)', 'text', 'Ej. 123456')}
             {renderInput('lastName', 'Apellidos', 'text', 'Ej. Pérez García')}
             {renderInput('firstName', 'Nombre(s)', 'text', 'Ej. Juan Carlos')}
-            {renderInput('phoneNumber', 'Número Telefónico', 'tel', 'Ej. 4731234567')}
+            {renderInput('phoneNumber', 'Número de Celular', 'tel', 'Ej. 4731234567')}
             {renderInput('instEmail', 'Correo Institucional', 'email', 'john.doe@ugto.mx')}
           </div>
           <>

@@ -41,6 +41,8 @@ export async function POST(req: NextRequest) {
         }
         if (instEmail && instEmail.length > 0 && !validateUgtoEmail(instEmail)) {
             return NextResponse.json({ message: "El correo institucional no es valido." }, { status: 405 });
+        } else if (instEmail && instEmail.length > 0) {
+            emailAddress.push(instEmail);
         }
         if (!validateEmails(emailAddress)) {
             return NextResponse.json({ message: "El campo de correos no es valido." }, { status: 405 });
