@@ -8,7 +8,7 @@ import phoneValidator from "@/app/utils/phone_validator";
 import validatePassword from "@/app/utils/password_validator";
 import validateEmails from "@/app/utils/emails_validator";
 
-const required_fields = ['nua', 'firstName', 'lastName', 'emailAddress', 'password'];
+const required_fields = ['firstName', 'lastName', 'emailAddress', 'password'];
 
 export async function POST(req: NextRequest) {
     const data = await req.json();
@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
         let { nua, firstName, lastName, phoneNumber, emailAddress, password, ...other } = data;
         firstName = firstName.toUpperCase();
         lastName = lastName.toUpperCase();
-        if (!validateNUA(nua)) {
+        if (nua && !validateNUA(nua)) {
             return NextResponse.json({ message: "La NUE no es valida." }, { status: 405 });
         }
         if (!validateName(firstName)) {
@@ -32,10 +32,10 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ message: "El campo de apellidos no es valido." }, { status: 405 });
         }
         if (!phoneValidator(phoneNumber)) {
-            return NextResponse.json({ message: "El campo de numero de telefono no es valido." }, { status: 405 });
+            return NextResponse.json({ message: "El campo de numero de teléfono no es valido." }, { status: 405 });
         }
         if (!validatePassword(password)) {
-            return NextResponse.json({ message: "El campo de contrasena no es valido." }, { status: 405 });
+            return NextResponse.json({ message: "El campo de contraseña no es valido." }, { status: 405 });
         }
         if (!validateEmails(emailAddress)) {
             return NextResponse.json({ message: "El campo de correos no es valido." }, { status: 405 });

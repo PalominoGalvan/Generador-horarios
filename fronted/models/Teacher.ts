@@ -21,7 +21,6 @@ const TeacherSchema = new mongoose.Schema<Teacher>({
             validator: validateNUA,
             message: "La NUA debe contener exactamente 6 digitos"
         },
-        required: [true, "El campo de la NUA es requerido"]
     },
     firstName: {
         type: String,

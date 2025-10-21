@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, FormEvent } from 'react';
+import sleep from './utils/sleep';
+import { useRouter } from 'next/navigation';
 
 interface FormData {
   emailAddress: string,
@@ -19,6 +21,7 @@ export default function CargaAcademicaPage() {
     type: 'idle',
     message: '',
   });
+  const router = useRouter();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -30,8 +33,6 @@ export default function CargaAcademicaPage() {
     e.preventDefault();
 
     setStatus({ type: 'loading', message: 'Enviando información...' });
-
-    const dataToSend = { ...formData };
   
     try {
       const response = await fetch('/api/iniciar_sesion', {
@@ -49,6 +50,9 @@ export default function CargaAcademicaPage() {
       
       console.log('Respuesta del servidor:', responseBody);
       setStatus({ type: 'success', message: responseBody.message });
+
+      await sleep(5000);
+      router.push('/formulario');
 
     } catch (error: any) {
       console.error('Error al enviar el formulario:', error);

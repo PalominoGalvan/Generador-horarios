@@ -69,12 +69,12 @@ export default function RegistroPage() {
   const validateField = (name: keyof FormData, value: string | undefined) => {
     let msg: string | undefined;
     const strValue = String(value || '');
-    if (name.includes('emails') && !validateEmail(strValue)) msg = "El correo electronico no es valido.";
+    if (name.includes('emails') && !validateEmail(strValue)) msg = "El correo electrónico no es valido.";
     if (name === 'nua' && !validateNUA(strValue)) msg = 'El NUE debe contener 6 dígitos numéricos.';
     if (name === 'firstName' && !validateName(strValue)) msg = 'El nombre es requerido.';
     if (name === 'lastName' && !validateName(strValue)) msg = 'Los apellidos son requeridos.';
-    if (name === 'password' && !validatePassword(strValue)) msg = "La contrasena debe tener al menos 12 caracteres, con al menos una minuscula, una mayuscula, un numero y un caracter especial (-+_!@#$%^&*.,?).";
-    if (name === 'passwordConfirm' && formData.password !== formData.passwordConfirm) msg = "Las contrasenas no coinciden.";
+    if (name === 'password' && !validatePassword(strValue)) msg = "La contraseña debe tener al menos 12 caracteres, con al menos una minúscula, una mayúscula, un numero y un caracter especial (-+_!@#$%^&*.,?).";
+    if (name === 'passwordConfirm' && formData.password !== formData.passwordConfirm) msg = "Las contraseñas no coinciden.";
     setErrors(prev => ({ ...prev, [name]: msg }));
   }
 
@@ -128,8 +128,8 @@ export default function RegistroPage() {
       console.log('Respuesta del servidor:', responseBody);
       setStatus({ type: 'success', message: responseBody.message });
 
-      await sleep(10000);
-      router.push('/');
+      await sleep(5000);
+      router.push('/formulario');
 
     } catch (error: any) {
       console.error('Error al enviar el formulario:', error);
@@ -147,14 +147,14 @@ export default function RegistroPage() {
         <form onSubmit={handleSubmit} className="space-y-6">
           <h2 className="text-xl font-semibold text-black mb-4">Información Personal</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {renderInput('nua', 'NUE (Clave Única)', 'text', 'Ej. 123456')}
+            {renderInput('nua', 'NUE (Clave Única) (Opcional)', 'text', 'Ej. 123456')}
             {renderInput('lastName', 'Apellidos', 'text', 'Ej. Pérez García')}
             {renderInput('firstName', 'Nombre(s)', 'text', 'Ej. Juan Carlos')}
             {renderInput('phoneNumber', 'Número Telefónico', 'tel', 'Ej. 4731234567')}
           </div>
           <>
             {formData.emails.map((_, idx) => {
-                return <div key={idx}>{renderInput(`emails[${idx}]`, "Correos Electronicos", "email", "john.doe@ugto.mx", idx)}</div>;
+                return <div key={idx}>{renderInput(`emails[${idx}]`, "Correos Electronicos", "email", "john.doe@gmail.mx", idx)}</div>;
             })}
           </>
           <button 
