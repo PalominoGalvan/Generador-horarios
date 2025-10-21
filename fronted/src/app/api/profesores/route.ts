@@ -3,7 +3,6 @@ import dbConnect from "../../../../lib/dbConnect";
 import Availability from "../../../../models/Availability";
 import { parse } from 'cookie';
 import { JwtPayload, verify } from "jsonwebtoken";
-import validatePositiveNumber from "@/app/utils/number_validator";
 import validateSubject from "@/app/utils/subject_validator";
 import validateAvailability from "@/app/utils/availability_validator";
 
@@ -42,8 +41,14 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ message: "La disponibilidad no es valida" }, { status: 405 });
         }
         await Availability.updateOne(
-            { _id: token.id },
-            { archHours: archHours, availability: availability, desiredSubjects: desiredSubjects, hasAdministrativePos: hasAdministrativePos },
+            { teacherId: token.id },
+            {
+                teacherId: token.id,
+                archHours: archHours, 
+                availability: availability, 
+                desiredSubjects: desiredSubjects, 
+                hasAdministrativePos: hasAdministrativePos 
+            },
             { upsert: true, runValidators: true }
         )
         return NextResponse.json({ message: "Disponibilidad actualizada exitosamente" }, { status: 202 });
