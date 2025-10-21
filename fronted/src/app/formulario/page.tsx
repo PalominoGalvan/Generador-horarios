@@ -182,9 +182,9 @@ export default function CargaAcademicaPage() {
             <h2 className="text-xl font-semibold text-black mb-4">Información Laboral</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               
-              {renderInput('archHours', '¿Cuántas horas tiene definidas en el departamento de arquitectura?', 'number')}
+              {renderInput('archHours', '¿Cuántas horas definitivas en el departamento de arquitectura?', 'number')}
 
-              {renderInputSelect('hasAdministrativePos', '¿Tiene un puesto administrativo adicional?', [
+              {renderInputSelect('hasAdministrativePos', '¿Tiene algún puesto administrativo adicional? (UG, gobierno, otros)', [
                 { value: 'true', label: 'Sí' },
                 { value: 'false', label: 'No' },
               ])}
@@ -232,7 +232,7 @@ export default function CargaAcademicaPage() {
           {/* UDAs de Interés */}
           <div>
             <h2 className="text-xl font-semibold text-black mb-4">UDAs de Interés</h2>
-            <p className="text-sm text-gray-500 mb-4">Marque las unidades de aprendizaje (UDAs) que le gustaría impartir o en las que tiene experiencia.</p>
+            <p className="text-sm text-gray-500 mb-4">Seleccione las Unidades de Aprendizaje (UDAs) que actualmente imparte, así como aquellas que estaría interesado(a) en impartir.</p>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
               {subjects.map(uda => (
                 <div key={uda} className="flex items-center">

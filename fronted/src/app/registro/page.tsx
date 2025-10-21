@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import sleep from '../utils/sleep';
 import validateNUA from '../utils/nua_validator';
 import validateName from '../utils/name_validator';
+import validateUgtoEmail from '../utils/ugto_email_validator';
 
 interface FormData {
   nua: string;
@@ -73,7 +74,7 @@ export default function RegistroPage() {
     let msg: string | undefined;
     const strValue = String(value || '');
     if (name.includes('emails') && name !== 'instEmail' && !validateEmail(strValue)) msg = "El correo electrónico no es valido.";
-    if (name === 'instEmail' && strValue.length > 0 && !validateEmail(strValue)) msg = "El correo institucional no es valido";
+    if (name === 'instEmail' && strValue.length > 0 && !validateUgtoEmail(strValue)) msg = "El correo institucional no es valido";
     if (name === 'nua' && !validateNUA(strValue)) msg = 'El NUE debe contener 5 dígitos numéricos.';
     if (name === 'firstName' && !validateName(strValue)) msg = 'El nombre es requerido.';
     if (name === 'lastName' && !validateName(strValue)) msg = 'Los apellidos son requeridos.';
@@ -92,7 +93,7 @@ export default function RegistroPage() {
     if (!validateNUA(formData.nua)) errors.nua = 'El NUE debe contener 5 dígitos numéricos.';
     if (!validateName(formData.firstName)) errors.firstName = 'El nombre es requerido.';
     if (!validateName(formData.lastName)) errors.lastName = 'Los apellidos son requeridos.';
-    if (formData.instEmail.length > 0 && !validateEmail(formData.instEmail)) errors.instEmail = 'El correo institucional no es valido.';
+    if (formData.instEmail.length > 0 && !validateUgtoEmail(formData.instEmail)) errors.instEmail = 'El correo institucional no es valido.';
     let email_errs = Array(formData.emails.length).fill('');
     for (const [idx, email] of formData.emails.entries()) {
         if (!validateEmail(email)) email_errs[idx] = "El correo electrónico no es valido.";
