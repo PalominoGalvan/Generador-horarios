@@ -9,7 +9,7 @@ import validatePositiveNumber from '../utils/number_validator'
 //datos para el formulario
 interface FormData {
   archHours: number;
-  hasAdministrativePos: 'true' | 'false' | '';
+  hasAdministrativePos: 'true' | 'false';
   availability: Record<string, boolean[]>;
   desiredSubjects: string[];
 }
@@ -25,7 +25,7 @@ const disponibilidadInicial = DIAS.reduce((acc, dia) => {
 
 const initialState: FormData = {
   archHours: 0,
-  hasAdministrativePos: '',
+  hasAdministrativePos: 'false',
   availability: disponibilidadInicial,
   desiredSubjects: [],
 };
@@ -83,7 +83,7 @@ export default function CargaAcademicaPage() {
 
     switch (name) {
       case 'hasAdministrativePos':
-        if (!strValue) errorMessage = 'Debes seleccionar una opción.';
+        if (strValue !== 'true' && strValue !== 'false') errorMessage = 'Debes seleccionar una opción.';
         break;
       case 'archHours':
         const numValue = Number(value);
@@ -111,7 +111,7 @@ export default function CargaAcademicaPage() {
     if (Number.isInteger(formData.archHours) && formData.archHours >= 0) {
       newErrors.archHours = 'El número de horas es inválido.';
     }
-    if (formData.hasAdministrativePos === '') newErrors.hasAdministrativePos = 'Debes seleccionar una opción.';
+    if (formData.hasAdministrativePos !== 'true' && formData.hasAdministrativePos !== 'false') newErrors.hasAdministrativePos = 'Debes seleccionar una opción.';
     if (formData.desiredSubjects.length === 0) {
       newErrors.desiredSubjects = 'Debes seleccionar al menos una UDA de interés.';
       // (Opcional) Mostramos este error cerca del botón de envío o del título de UDAs
