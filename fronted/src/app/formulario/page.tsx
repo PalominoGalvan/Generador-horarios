@@ -9,7 +9,7 @@ import validatePositiveNumber from '../utils/number_validator'
 //datos para el formulario
 interface FormData {
   archHours: number;
-  hasAdministrativePos: 'si' | 'no' | '';
+  hasAdministrativePos: 'true' | 'false' | '';
   availability: Record<string, boolean[]>;
   desiredSubjects: string[];
 }
@@ -88,7 +88,7 @@ export default function CargaAcademicaPage() {
       case 'archHours':
         const numValue = Number(value);
         if (!validatePositiveNumber(numValue)) {
-          errorMessage = 'Debe ser un número entero y mayor o igual que cero.';
+          errorMessage = 'Debe ser un número entero mayor o igual que cero.';
         }
         break;
     }
