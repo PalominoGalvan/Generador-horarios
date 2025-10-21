@@ -182,7 +182,7 @@ export default function CargaAcademicaPage() {
             <h2 className="text-xl font-semibold text-black mb-4">Información Laboral</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               
-              {renderInput('archHours', '¿Cuántas horas definitivas en el departamento de arquitectura?', 'number')}
+              {renderInput('archHours', '¿Cuántas horas definitivas tiene en el departamento de arquitectura?', 'number')}
 
               {renderInputSelect('hasAdministrativePos', '¿Tiene algún puesto administrativo adicional? (UG, gobierno, otros)', [
                 { value: 'true', label: 'Sí' },
