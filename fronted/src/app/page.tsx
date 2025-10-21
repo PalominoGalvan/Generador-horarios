@@ -68,7 +68,7 @@ export default function CargaAcademicaPage() {
         </header>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {renderInput("emailAddress", "Correo Electrónico", "email", "john.doe@ugto.mx")}
+          {renderInput("emailAddress", "Correo Electrónico", "email", "john.doe@gmail.com")}
           {renderInput("password", "Contraseña", showPassword ? "text" : "password", "************")}
           <p onClick={() => setPasswordVisibility(prev => !prev)} className='block text-sm text-blue-800 underline'>Mostrar contraseña</p>
           {(status.type === 'error' || status.type === 'success') && (

@@ -59,6 +59,6 @@ export async function POST(req: NextRequest) {
         }
         return Response.json({ status: 200, message: "Registro completado exitosamente." });
     } catch (error: any) {
-        return Response.json({ status: 505, message: error.message });
+        return NextResponse.json({ message: error.message }, { status: 505 });
     }
 }

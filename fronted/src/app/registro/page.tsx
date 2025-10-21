@@ -154,7 +154,7 @@ export default function RegistroPage() {
           </div>
           <>
             {formData.emails.map((_, idx) => {
-                return <div key={idx}>{renderInput(`emails[${idx}]`, "Correos Electronicos", "email", "john.doe@gmail.mx", idx)}</div>;
+                return <div key={idx}>{renderInput(`emails[${idx}]`, "Correos Electronicos", "email", "john.doe@gmail.com", idx)}</div>;
             })}
           </>
           <button 
