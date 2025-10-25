@@ -1,19 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "../../../../lib/dbConnect";
 import Availability from "../../../../models/Availability";
-import { parse } from 'cookie';
-import { JwtPayload, verify } from "jsonwebtoken";
 import validateSubject from "@/app/utils/subject_validator";
 import validateAvailability from "@/app/utils/availability_validator";
+import verifyJwt from "@/app/utils/verify_jwt";
 
 const required_fields = ['archHours', 'desiredSubjects', 'hasAdministrativePos', 'availability'];
-
-const verifyJwt = (cookieHeader: string | null): JwtPayload | null => {
-    if (!cookieHeader || !parse(cookieHeader).authToken) {
-        return null;
-    }
-    return verify(parse(cookieHeader).authToken!, process.env.JWT_SECRET!) as JwtPayload;
-}
 
 export async function POST(req: NextRequest) {
     const data = await req.json();
