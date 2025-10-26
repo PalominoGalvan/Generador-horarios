@@ -15,6 +15,9 @@ function formatAvailability(
   daySeparator: string = ", ",
   blockSeparator: string = ", "
 ): string {
+  if (!availability || Object.keys(availability).length === 0) {//si no hay disponibilidad
+    return "";
+  }
   const allBlocks: string[] = [];
 
   for (const dia of DIAS) {
@@ -56,11 +59,13 @@ function formatAvailability(
 
 //formatea la disponibilidad para mostrarla en la tabla HTML
 export function formatAvailabilityForDisplay(availability: Record<string, boolean[]>): string {
-    return formatAvailability(availability, ", ", ", ");
+    const formatted = formatAvailability(availability, " | ", " | ");
+    return formatted || 'N/A';
 }
 
 
 //formatea la disponibilidad para un archivo CSV usando punto y coma
 export function formatAvailabilityForCSV(availability: Record<string, boolean[]>): string {
-    return formatAvailability(availability, " | ", "; ");
+    const formatted =formatAvailability(availability, " | ", "; ");
+    return formatted || 'N/A';
 }
